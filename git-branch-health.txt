@@ -1,0 +1,55 @@
+# ===============================
+# CONFIGURACAO DO DEV
+# ===============================
+$repoPath = "C:\repos\meu-projeto"   # <<< AJUSTAR AQUI
+$baseBranch = "origin/main"
+
+# ===============================
+# POLITICA
+# ===============================
+$warnBehind = 10
+$maxBehind  = 30
+
+# ===============================
+# EXECUCAO
+# ===============================
+if (-not (Test-Path $repoPath)) {
+    exit
+}
+
+cd $repoPath
+
+git fetch origin 2>$null
+
+$branch = git branch --show-current
+if (-not $branch) {
+    exit
+}
+
+$result = git rev-list --left-right --count "$baseBranch...HEAD"
+$behind = [int]($result -split '\s+')[0]
+$ahead  = [int]($result -split '\s+')[1]
+
+if ($behind -ge $maxBehind) {
+    $message = "🚨 Sua branch '$branch' está $behind commits ATRÁS da main. Crie uma nova branch ou atualize."
+}
+elseif ($behind -ge $warnBehind) {
+    $message = "⚠️ Sua branch '$branch' está $behind commits atrás da main. Atualize quando puder."
+}
+else {
+    exit
+}
+
+# ===============================
+# NOTIFICACAO WINDOWS
+# ===============================
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+$template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent(1)
+$template.GetElementsByTagName("text")[0].AppendChild(
+    $template.CreateTextNode($message)
+) > $null
+
+$toast = [Windows.UI.Notifications.ToastNotification]::new($template)
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(
+    "Git Branch Health"
+).Show($toast)
