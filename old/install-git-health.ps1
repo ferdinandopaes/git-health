@@ -26,3 +26,4 @@ Register-ScheduledTask `
     -Force
 
 Write-Host "✔ Git Branch Health instalado com sucesso"
+

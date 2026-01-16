@@ -53,3 +53,4 @@ $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier(
     "Git Branch Health"
 ).Show($toast)
+
