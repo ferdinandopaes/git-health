@@ -1,127 +1,184 @@
-## O que é isso?
+📌 Verificador de Atraso de Branch Git (PowerShell)
+📖 O que é este projeto?
 
-O **Git Branch Health Check** é uma ferramenta simples que roda **automaticamente no seu computador** para verificar se a sua branch local está muito desatualizada em relação à branch principal do projeto (ex: `main`).
+Este script PowerShell tem um objetivo simples e direto:
 
-O objetivo é **evitar branches antigas**, que costumam gerar:
+Avisar o usuário, de forma clara e visual, quando a branch local do Git estiver atrasada em relação ao repositório remoto.
 
-* conflitos difíceis de resolver
-* retrabalho
-* atrasos em Pull Requests
-* perda de contexto do código
+Ele foi pensado para rodar automaticamente no Windows (via Agendador de Tarefas) e mostrar uma janela visível ao usuário, evitando aqueles scripts que rodam em segundo plano e ninguém vê.
 
-A ferramenta **não bloqueia nada** e **não faz alterações no seu repositório**.
-Ela apenas **avisa**, de forma discreta, quando é uma boa ideia atualizar sua branch ou criar uma nova.
+🎯 Problema que ele resolve
 
----
+Em times ou ambientes locais é comum:
 
-## Como funciona?
+Esquecer de atualizar a branch
 
-Todos os dias, em dois horários:
+Trabalhar com código desatualizado
 
-* **09:00 (manhã)**
-* **15:00 (tarde)**
+Só perceber isso tarde demais
 
-O script executa automaticamente os seguintes passos:
+Esse script resolve isso avisando duas vezes ao dia, sem depender de IDE, CI ou disciplina humana 😄
 
-1. Acessa o repositório configurado no seu computador
-2. Atualiza as referências remotas (`git fetch`)
-3. Compara sua branch atual com a branch base (`origin/main`)
-4. Conta:
+🧠 Como o script funciona?
 
-   * quantos commits sua branch está **atrás**
-   * quantos commits está **à frente**
-5. Aplica a seguinte regra:
+O fluxo é o seguinte:
 
-   * até **9 commits atrás** → nenhuma ação
-   * entre **10 e 29 commits atrás** → aviso
-   * **30 commits ou mais atrás** → alerta mais forte
-6. Caso necessário, exibe uma **notificação no Windows**
+Entra no diretório do repositório Git
 
----
+Executa git fetch origin
 
-## Exemplos de mensagens
+Compara a branch local com a branch remota
 
-* ⚠️
-  *"Sua branch está 14 commits atrás da main. Considere atualizar quando possível."*
+Conta quantos commits a branch local está atrasada
 
-* 🚨
-  *"Sua branch está 42 commits atrás da main. Considere criar uma nova branch ou atualizar."*
+Exibe uma janela do Windows com:
 
----
+✅ Mensagem de sucesso se estiver tudo OK
 
-## Por que isso é importante?
+⚠ Alerta se a branch estiver atrasada
 
-Manter a branch atualizada ajuda a:
+Aguarda o usuário clicar em OK
 
-* reduzir conflitos em Pull Requests
-* facilitar o review de código
-* manter o histórico mais limpo
-* diminuir o risco de retrabalho no final da feature
+Tudo isso acontece sem abrir janela azul piscando do PowerShell.
 
-Esse script funciona como um **lembrete automático**, para ajudar no dia a dia, sem impor regras rígidas.
+🧩 Requisitos
 
----
+Antes de instalar, verifique:
 
-## Como instalar
+✅ Windows 10 ou 11
 
-### 1 Ajustar o caminho do repositório
+✅ PowerShell 5.1 ou superior
 
-Abra o arquivo:
+✅ Git instalado e disponível no PATH
 
-```
-git-branch-health.txt
-```
+✅ Repositório Git já clonado localmente
 
-Edite a linha abaixo com o caminho do seu repositório local:
+✅ Usuário com permissão de leitura no repositório
 
-```powershell
-$repoPath = "C:\repos\meu-projeto"
-```
+⚙️ Configuração do script
 
-Salve o arquivo.
+Abra o arquivo verifica-branch.ps1 e ajuste estas variáveis:
 
----
+$BranchName = "main"
+$RepoPath   = "C:\repos\meu-repo"
+$MaxBehindCommits = 3
 
-### 2 Executar o instalador
+O que cada uma faz:
+Variável	Descrição
+BranchName	Nome da branch que será verificada
+RepoPath	Caminho completo do repositório local
+MaxBehindCommits	Quantidade máxima de commits aceitável antes de alertar
+🪟 Como a notificação aparece?
 
-Clique com o botão direito no arquivo:
+O script utiliza:
 
-```
-install-git-health.ps1
-```
+System.Windows.Forms.MessageBox
 
-E escolha:
 
-**Executar com PowerShell**
+Isso garante que:
 
-Isso irá:
+A janela seja visível
 
-* copiar o script para uma pasta local
-* criar uma tarefa agendada no Windows
-* configurar a execução automática duas vezes ao dia
+Apareça para o usuário logado
 
----
+Tenha botão OK
 
-## Como desinstalar
+Não dependa de módulos externos
 
-1. Abra o **Agendador de Tarefas do Windows**
-2. Procure pela tarefa:
+Exemplo de mensagem:
 
-   ```
-   Git Branch Health Check
-   ```
-3. Exclua a tarefa
-4. (Opcional) Apague a pasta:
+✅ Branch atualizada
 
-   ```
-   %LOCALAPPDATA%\GitBranchHealth
-   ```
+⚠ Branch atrasada — atualize o quanto antes
 
----
+⏰ Como agendar para rodar duas vezes ao dia
+1️⃣ Abrir o Agendador de Tarefas
 
-## Segurança e transparência
+Pressione Win + R
 
-* O script é local, roda apenas na sua máquina
-* Não envia dados para servidores externos
-* Não modifica commits, branches ou histórico
-* O código é totalmente aberto para inspeção
+Digite taskschd.msc
+
+Pressione Enter
+
+2️⃣ Criar nova tarefa
+
+Clique em Criar Tarefa… (não use “Criar Tarefa Básica”).
+
+3️⃣ Aba "Geral"
+
+Nome: Verificar Branch Git
+
+Marque:
+
+✅ Executar somente quando o usuário estiver conectado
+
+Desmarque:
+
+❌ Executar com privilégios mais altos
+
+📌 Isso é essencial para a janela aparecer.
+
+4️⃣ Aba "Disparadores"
+
+Crie DOIS disparadores:
+
+🔹 Disparador 1 – Manhã
+
+Tipo: Diário
+
+Horário: 09:00
+
+Repetir: Todos os dias
+
+🔹 Disparador 2 – Tarde
+
+Tipo: Diário
+
+Horário: 15:00
+
+Repetir: Todos os dias
+
+5️⃣ Aba "Ações"
+
+Ação: Iniciar um programa
+
+Programa/script
+
+powershell.exe
+
+
+Adicionar argumentos
+
+-WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\caminho\verifica-branch.ps1"
+
+
+Iniciar em
+
+C:\repos\meu-repo
+
+
+📌 Esse -WindowStyle Hidden é o que elimina a tela azul piscando.
+
+6️⃣ Aba "Condições"
+
+Desmarque:
+
+❌ Iniciar a tarefa somente se o computador estiver na energia AC
+
+7️⃣ Aba "Configurações"
+
+Marque:
+
+✅ Permitir que a tarefa seja executada sob demanda
+
+✅ Se a tarefa falhar, reiniciar a cada: 1 minuto (opcional)
+
+🧪 Como testar manualmente
+
+No Agendador de Tarefas:
+
+Clique com o botão direito na tarefa
+
+Selecione Executar
+
+A janela deve aparecer imediatamente.
