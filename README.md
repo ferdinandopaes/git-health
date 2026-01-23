@@ -57,7 +57,7 @@ Antes de instalar, verifique:
 
 ⚙️ Configuração do script
 
-Abra o arquivo verifica-branch.ps1 e ajuste estas variáveis:
+Abra o arquivo git-health.ps1 e ajuste estas variáveis:
 
 $BranchName = "main"
 $RepoPath   = "C:\repos\meu-repo"
@@ -149,7 +149,7 @@ powershell.exe
 
 Adicionar argumentos
 
--WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\caminho\verifica-branch.ps1"
+-WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\caminho\git-health.ps1"
 
 
 Iniciar em
